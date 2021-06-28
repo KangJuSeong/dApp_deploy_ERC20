@@ -7,7 +7,7 @@ pragma solidity ^0.4.24;
 // Name          : TES Token
 // Total supply  : 100000
 // Decimals      : 2
-// Owner Account : 0xe0576f7301fa262FE5e1A24Be1aB103C9FF0D23f
+// Owner Account : 0x3C4A8a3D028405D79e68B54A60a2dFF513dD0A96
 //
 // Enjoy.
 //
@@ -88,8 +88,8 @@ contract TESToken is ERC20Interface, SafeMath {
         name = "TES Token";
         decimals = 2;
         _totalSupply = 100000;
-        balances[0xe0576f7301fa262FE5e1A24Be1aB103C9FF0D23f] = _totalSupply;
-        emit Transfer(address(0), 0xe0576f7301fa262FE5e1A24Be1aB103C9FF0D23f, _totalSupply);
+        balances[0x3C4A8a3D028405D79e68B54A60a2dFF513dD0A96] = _totalSupply;
+        emit Transfer(address(0), 0x3C4A8a3D028405D79e68B54A60a2dFF513dD0A96, _totalSupply);
     }
 
 

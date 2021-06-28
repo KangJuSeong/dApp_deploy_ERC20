@@ -11,6 +11,8 @@ class Front extends Component {
             web3: null,
             accounts: null,
             contract: null,
+            address: "",
+            balance: null,
         }
     }
 
@@ -21,7 +23,10 @@ class Front extends Component {
             const Contract = truffleContract(TesToken);
             Contract.setProvider(web3.currentProvider);
             const instance = await Contract.deployed();
-            this.setState({web3, accounts, contract: instance});
+            this.setState({web3, accounts, contract: instance, address: String(accounts[0])});
+            await instance.balanceOf(String(accounts[0])).then((balance) => {
+                this.setState({balance: balance.c[0] * 0.01});
+            })
             console.log(instance.address);
         } catch (error) {
             alert("Failed to load web3, accounts, or contract. Check console for details.");
@@ -33,10 +38,16 @@ class Front extends Component {
         return(
             <div>
                 <div>
-                    내 지갑
+                    내 지갑 <br/>
+                    주소 : {this.state.address} <br/>
+                    잔액 : {this.state.balance} <br/>
                 </div>
+                <br/>
                 <div>
-                    송금하기
+                    송금하기 <br/>
+                    <button>
+                        송금하기
+                    </button>
                 </div>
             </div>
         )
