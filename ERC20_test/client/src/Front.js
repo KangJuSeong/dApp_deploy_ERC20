@@ -12,7 +12,10 @@ class Front extends Component {
             accounts: null,
             contract: null,
             address: "",
-            balance: null,
+            TesBalance: null,
+            EthBalance: null,
+            sendAmount: "",
+            sendAddress: "",
         }
     }
 
@@ -25,8 +28,11 @@ class Front extends Component {
             const instance = await Contract.deployed();
             this.setState({web3, accounts, contract: instance, address: String(accounts[0])});
             await instance.balanceOf(String(accounts[0])).then((balance) => {
-                this.setState({balance: balance.c[0] * 0.01});
+                this.setState({TesBalance: balance.c[0] * 0.01});
             })
+            await web3.eth.getBalance(String(accounts[0])).then((balance) => {
+                this.setState({EthBalance: balance * 0.000000000000000001});
+            });
             console.log(instance.address);
         } catch (error) {
             alert("Failed to load web3, accounts, or contract. Check console for details.");
@@ -34,20 +40,51 @@ class Front extends Component {
         }
     }
 
+    handleAmountChange = (e) => {
+        this.setState({sendAmount: e.target.value});
+    };
+    
+    handleAddressChange = (e) => {
+        this.setState({sendAddress: e.target.value});
+    };
+
+    handleTransferTES = async () => {
+        const {contract} = this.state;
+        const amount = Number(this.state.sendAmount) * 100;
+        await contract.transfer(this.state.sendAddress, amount).then((result) => {
+            alert(String(result));
+        });
+        this.setState({sendAmount: "", sendAddress: ""});
+    };
+
+    dispalyTransactionList = async () => {
+        const {contract} = this.state;
+        await contract.allowance(this.state.address, this.state.sendAddress).then((result) => {
+            alert(String(result));
+        });
+    };
+
     render() {
         return(
             <div>
                 <div>
                     내 지갑 <br/>
-                    주소 : {this.state.address} <br/>
-                    잔액 : {this.state.balance} <br/>
+                    주소 : {this.state.address} <br />
+                    TES 잔액 : {this.state.TesBalance} TES<br />
+                    ETH 잔액 : {this.state.EthBalance} ETH<br />
                 </div>
-                <br/>
+                <br />
                 <div>
-                    송금하기 <br/>
-                    <button>
+                    송금하기 <br />
+                    금액 : <input placeholder="송금할 금액을 입력해주세요." value={this.state.sendAmount} onChange={e => this.handleAmountChange(e)}/>  TES <br />
+                    주소 : <input placeholder="받는 주소를 입력해주세요." value={this.state.sendAddress} onChange={e => this.handleAddressChange(e)}/> <br />
+                    <button onClick={this.handleTransferTES}>
                         송금하기
                     </button>
+                </div>
+                <br />
+                <div>
+                    거래 내역
                 </div>
             </div>
         )
