@@ -16,6 +16,7 @@ class Front extends Component {
             EthBalance: null,
             sendAmount: "",
             sendAddress: "",
+            txList: [],
         }
     }
 
@@ -27,12 +28,16 @@ class Front extends Component {
             Contract.setProvider(web3.currentProvider);
             const instance = await Contract.deployed();
             this.setState({web3, accounts, contract: instance, address: String(accounts[0])});
-            await instance.balanceOf(String(accounts[0])).then((balance) => {
+            await instance.balanceOf(accounts[0]).then((balance) => {
                 this.setState({TesBalance: balance.c[0] * 0.01});
             })
-            await web3.eth.getBalance(String(accounts[0])).then((balance) => {
+            await web3.eth.getBalance(accounts[0]).then((balance) => {
                 this.setState({EthBalance: balance * 0.000000000000000001});
             });
+            await instance.Transfer().watch((error, result) => this.watchTransfer(error, result));
+            await instance.Approval().watch((error, result) => this.watchApproval(error, result));
+            // let {address, privateKey} = await web3.eth.accounts.create();
+            // console.log(address, privateKey);
             console.log(instance.address);
         } catch (error) {
             alert("Failed to load web3, accounts, or contract. Check console for details.");
@@ -49,20 +54,49 @@ class Front extends Component {
     };
 
     handleTransferTES = async () => {
-        const {contract} = this.state;
+        const {web3, contract} = this.state;
         const amount = Number(this.state.sendAmount) * 100;
-        await contract.transfer(this.state.sendAddress, amount).then((result) => {
-            alert(String(result));
-        });
+        try {
+            await contract.transfer(this.state.sendAddress, amount).then((result) => {
+                console.log(result);
+            });
+        } catch(e) {
+            console.log(e);
+        }
         this.setState({sendAmount: "", sendAddress: ""});
     };
 
-    dispalyTransactionList = async () => {
+    dispalyTxList = async () => {
         const {contract} = this.state;
         await contract.allowance(this.state.address, this.state.sendAddress).then((result) => {
             alert(String(result));
         });
     };
+
+    watchTransfer = async (error, result) => {
+        if(!error) {
+            console.log("Transfer envet 발생");
+            const {web3, contract, accounts} = this.state;
+            const tx = {from: result.args.from, to: result.args.to, amount: result.args.tokens};
+            this.setState({txList: this.state.txList.concat(tx)});
+            await contract.balanceOf(accounts[0]).then((balance) => {
+                this.setState({TesBalance: balance.c[0] * 0.01});
+            })
+            await web3.eth.getBalance(accounts[0]).then((balance) => {
+                this.setState({EthBalance: balance * 0.000000000000000001});
+            });
+        } else {
+            console.log(error);
+        }
+    };
+
+    watchApproval = (error, result) => {
+        if(!error) {
+            console.log("Approval event 발생");
+        } else {
+            console.log(error)
+        }
+    }
 
     render() {
         return(
@@ -84,7 +118,17 @@ class Front extends Component {
                 </div>
                 <br />
                 <div>
-                    거래 내역
+                    거래 내역 <br />
+                    <ul>
+                    {this.state.txList.map((key, idx) => {
+                        return(
+                            <li> {idx+1} <br />
+                                    보낸 주소: {key.from} <br />
+                                    받은 주소 : {key.to} <br />
+                                    보낸 금액 : {key.amount.c[0] * 0.01} TES</li>
+                        )
+                    })}
+                    </ul>
                 </div>
             </div>
         )
