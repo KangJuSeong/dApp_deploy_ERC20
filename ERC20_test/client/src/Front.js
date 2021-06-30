@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import getWeb3 from './getWeb3';
 import truffleContract from "truffle-contract";
-import TesToken from './contracts/TESToken.json';
+import TesCoin from './contracts/TESCoin.json';
 
 
 class Front extends Component {
@@ -24,7 +24,7 @@ class Front extends Component {
         try{
             const web3 = await getWeb3();
             const accounts = await web3.eth.getAccounts();
-            const Contract = truffleContract(TesToken);
+            const Contract = truffleContract(TesCoin);
             Contract.setProvider(web3.currentProvider);
             const instance = await Contract.deployed();
             this.setState({web3, accounts, contract: instance, address: String(accounts[0])});
@@ -34,8 +34,8 @@ class Front extends Component {
             await web3.eth.getBalance(accounts[0]).then((balance) => {
                 this.setState({EthBalance: balance * 0.000000000000000001});
             });
-            await instance.Transfer().watch((error, result) => this.watchTransfer(error, result));
-            await instance.Approval().watch((error, result) => this.watchApproval(error, result));
+            // await instance.Transfer().watch((error, result) => this.watchTransfer(error, result));
+            // await instance.Approval().watch((error, result) => this.watchApproval(error, result));
             // let {address, privateKey} = await web3.eth.accounts.create();
             // console.log(address, privateKey);
             console.log(instance.address);
@@ -54,12 +54,11 @@ class Front extends Component {
     };
 
     handleTransferTES = async () => {
-        const {web3, contract} = this.state;
+        const {contract} = this.state;
         const amount = Number(this.state.sendAmount) * 100;
         try {
-            await contract.transfer(this.state.sendAddress, amount).then((result) => {
-                console.log(result);
-            });
+            var test = await contract.transfer(this.state.sendAddress);
+            alert(test);
         } catch(e) {
             console.log(e);
         }
@@ -68,35 +67,33 @@ class Front extends Component {
 
     dispalyTxList = async () => {
         const {contract} = this.state;
-        await contract.allowance(this.state.address, this.state.sendAddress).then((result) => {
-            alert(String(result));
-        });
+        
     };
 
-    watchTransfer = async (error, result) => {
-        if(!error) {
-            console.log("Transfer envet 발생");
-            const {web3, contract, accounts} = this.state;
-            const tx = {from: result.args.from, to: result.args.to, amount: result.args.tokens};
-            this.setState({txList: this.state.txList.concat(tx)});
-            await contract.balanceOf(accounts[0]).then((balance) => {
-                this.setState({TesBalance: balance.c[0] * 0.01});
-            })
-            await web3.eth.getBalance(accounts[0]).then((balance) => {
-                this.setState({EthBalance: balance * 0.000000000000000001});
-            });
-        } else {
-            console.log(error);
-        }
-    };
+    // watchTransfer = async (error, result) => {
+    //     if(!error) {
+    //         console.log("Transfer envet 발생");
+    //         const {web3, contract, accounts} = this.state;
+    //         const tx = {from: result.args.from, to: result.args.to, amount: result.args.tokens};
+    //         this.setState({txList: this.state.txList.concat(tx)});
+    //         await contract.balanceOf(accounts[0]).then((balance) => {
+    //             this.setState({TesBalance: balance.c[0] * 0.01});
+    //         })
+    //         await web3.eth.getBalance(accounts[0]).then((balance) => {
+    //             this.setState({EthBalance: balance * 0.000000000000000001});
+    //         });
+    //     } else {
+    //         console.log(error);
+    //     }
+    // };
 
-    watchApproval = (error, result) => {
-        if(!error) {
-            console.log("Approval event 발생");
-        } else {
-            console.log(error)
-        }
-    }
+    // watchApproval = (error, result) => {
+    //     if(!error) {
+    //         console.log("Approval event 발생");
+    //     } else {
+    //         console.log(error)
+    //     }
+    // }
 
     render() {
         return(

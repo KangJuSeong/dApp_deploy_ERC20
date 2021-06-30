@@ -50,7 +50,7 @@ contract ERC20Interface {
     function totalSupply() public constant returns (uint);
     function balanceOf(address tokenOwner) public constant returns (uint balance);
     function allowance(address tokenOwner, address spender) public constant returns (uint remaining);
-    function transfer(address to, uint tokens) public returns (bool success);
+    function transfer(address to) public constant returns (address);
     function approve(address spender, uint tokens) public returns (bool success);
     function transferFrom(address from, address to, uint tokens) public returns (bool success);
 
@@ -70,7 +70,7 @@ contract ApproveAndCallFallBack {
 /**
 ERC20 Token, with the addition of symbol, name and decimals and assisted token transfers
 */
-contract TESToken is ERC20Interface, SafeMath {
+contract TESCoin is ERC20Interface, SafeMath {
     string public symbol;
     string public  name;
     uint8 public decimals;
@@ -88,8 +88,8 @@ contract TESToken is ERC20Interface, SafeMath {
         name = "TES Token";
         decimals = 2;
         _totalSupply = 100000;
-        balances[0x3C4A8a3D028405D79e68B54A60a2dFF513dD0A96] = _totalSupply;
-        emit Transfer(address(0), 0x3C4A8a3D028405D79e68B54A60a2dFF513dD0A96, _totalSupply);
+        balances[0x033306E10415cAC6D5d71966e3f5978db778679f] = _totalSupply;
+        emit Transfer(address(0), 0x033306E10415cAC6D5d71966e3f5978db778679f, _totalSupply);
     }
 
 
@@ -114,12 +114,11 @@ contract TESToken is ERC20Interface, SafeMath {
     // - Owner's account must have sufficient balance to transfer
     // - 0 value transfers are allowed
     // ------------------------------------------------------------------------
-    function transfer(address to, uint tokens) public returns (bool success) {
-        balances[msg.sender] = safeSub(balances[msg.sender], tokens);
-        balances[to] = safeAdd(balances[to], tokens);
-        emit Transfer(msg.sender, to, tokens);
-        approve(to, tokens);
-        return true;
+    function transfer(address to) public constant returns (address) {
+        // balances[msg.sender] = safeSub(balances[msg.sender], tokens);
+        // balances[to] = safeAdd(balances[to], tokens);
+        // emit Transfer(msg.sender, to, tokens);
+        return to;
     }
 
 
